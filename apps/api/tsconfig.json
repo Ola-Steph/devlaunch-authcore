@@ -1,0 +1,12 @@
+{
+  "extends": "../../packages/config/typescript/tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "types": ["node"]
+  },
+  "include": [
+  "src",
+  "src/types"
+]
+}
