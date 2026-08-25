@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 
 import { ApiError } from "../errors/ApiError.js";
-import { verifyAccessToken } from "../security/jwt.js";
+import { tokenService } from "../security/token.service.js";
 import { UserModel } from "../../modules/users/index.js";
 
 export async function authenticate(
@@ -18,7 +18,7 @@ export async function authenticate(
 
     const token = authorization.substring(7);
 
-    const payload = verifyAccessToken(token);
+   const payload = tokenService.verifyAccessToken(token);
 
     const user = await UserModel.findById(payload.id);
 
