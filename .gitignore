@@ -10,3 +10,4 @@ coverage
 .vscode/settings.json
 
 .DS_Store
+.turbo

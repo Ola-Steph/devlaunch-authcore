@@ -1,26 +1,21 @@
-
+import type { Request, Response } from 'express';
 
 import {
-  refreshSchema,
   changePasswordSchema,
-  resetPasswordSchema,
-  verifyEmailSchema,
-  resendVerificationSchema,
+  forgotPasswordSchema,
   logoutSchema,
-} from "../dto/index.js";
+  refreshSchema,
+  resetPasswordSchema,
+  resendVerificationSchema,
+  verifyEmailSchema,
+} from '../dto/index.js';
 
-import type { Request, Response, NextFunction, } from "express";
+import { loginSchema } from '../dto/login.dto.js';
+import { registerSchema } from '../validators/index.js';
 
-import { authService } from "../services/auth.service.js";
-import { registerSchema } from "../validators/index.js";
+import { authService } from '../services/auth.service.js';
 
-import { loginSchema } from "../dto/login.dto.js";
-
-import { success } from "../../../common/utils/index.js";
-
-
-
-import { forgotPasswordSchema } from "../dto/forgot-password.dto.js";
+import { success } from '../../../common/utils/index.js';
 
 export const authController = {
   async register(req: Request, res: Response) {
@@ -28,168 +23,74 @@ export const authController = {
 
     const user = await authService.register(dto);
 
-      return success(
-        res,
-        user,
-        "Account created successfully",
-        201,
-      );
+    return success(res, user, 'Account created successfully', 201);
+  },
+
+  async login(req: Request, res: Response) {
+    const dto = loginSchema.parse(req.body);
+
+    const result = await authService.login(dto);
+
+    return success(res, result, 'Login successful');
   },
 
   async me(req: Request, res: Response) {
-      return success(
-        res,
-        req.user?.toJSON(),
-        "User retrieved successfully",
-      );
+    return success(res, req.user?.toJSON(), 'User retrieved successfully');
   },
 
   async refresh(req: Request, res: Response) {
-  const dto = refreshSchema.parse(req.body);
+    const dto = refreshSchema.parse(req.body);
 
-  const result = await authService.refresh(
-    dto.refreshToken,
-  );
+    const result = await authService.refresh(dto.refreshToken);
 
-    return success(
-      res,
-      result,
-      "Token refreshed successfully",
-    );
-
+    return success(res, result, 'Token refreshed successfully');
   },
 
+  async logout(req: Request, res: Response) {
+    const dto = logoutSchema.parse(req.body);
 
+    await authService.logout(dto.refreshToken);
 
-      async changePassword(
-      req: Request,
-      res: Response,
-    ) {
-      const dto =
-        changePasswordSchema.parse(req.body);
+    return success(res, null, 'Logged out successfully');
+  },
 
-      await authService.changePassword(
-        req.user!.id,
-        dto,
-      );
+  async changePassword(req: Request, res: Response) {
+    const dto = changePasswordSchema.parse(req.body);
 
-      return success(
-        res,
-        null,
-        "Password changed successfully",
-      );
-    },
+    await authService.changePassword(req.user!.id, dto);
 
-              async forgotPassword(
-                        req: Request,
-                        res: Response,
-                      ) {
-                        const dto =
-                          forgotPasswordSchema.parse(req.body);
+    return success(res, null, 'Password changed successfully');
+  },
 
-                        await authService.forgotPassword(dto);
+  async forgotPassword(req: Request, res: Response) {
+    const dto = forgotPasswordSchema.parse(req.body);
 
-                        return success(
-                          res,
-                          null,
-                          "If an account exists, a password reset email has been sent.",
-                        );
-                      },
+    await authService.forgotPassword(dto);
 
+    return success(res, null, 'If an account exists, a password reset email has been sent.');
+  },
 
+  async resetPassword(req: Request, res: Response) {
+    const dto = resetPasswordSchema.parse(req.body);
 
+    await authService.resetPassword(dto);
 
-                      async resetPassword(
-                    req: Request,
-                    res: Response,
-                  ) {
-                    const dto =
-                      resetPasswordSchema.parse(req.body);
+    return success(res, null, 'Password reset successfully');
+  },
 
-                    await authService.resetPassword(dto);
+  async verifyEmail(req: Request, res: Response) {
+    const dto = verifyEmailSchema.parse(req.body);
 
-                    return success(
-                      res,
-                      null,
-                      "Password reset successfully",
-                    );
-                  },
+    await authService.verifyEmail(dto);
 
-                  async verifyEmail(
-                    req: Request,
-                    res: Response,
-                  ) {
-                    const dto =
-                      verifyEmailSchema.parse(req.body);
+    return success(res, null, 'Email verified successfully');
+  },
 
-                    await authService.verifyEmail(dto);
+  async resendVerification(req: Request, res: Response) {
+    const dto = resendVerificationSchema.parse(req.body);
 
-                    return success(
-                      res,
-                      null,
-                      "Email verified successfully",
-                    );
-                  },
+    await authService.resendVerification(dto);
 
-
-                  async resendVerification(
-                  req: Request,
-                  res: Response,
-                ) {
-                  const dto =
-                    resendVerificationSchema.parse(
-                      req.body,
-                    );
-
-                  await authService.resendVerification(
-                    dto,
-                  );
-
-                  return success(
-                    res,
-                    null,
-                    "If an account exists, a verification email has been sent.",
-                  );
-                },
-
-
-                async logout(
-                  req: Request,
-                  res: Response,
-                ) {
-                  const dto =
-                    logoutSchema.parse(req.body);
-
-                  await authService.logout(
-                    dto.refreshToken,
-                  );
-
-                  return res.json({
-                    success: true,
-                    message: "Logged out successfully",
-                  });
-                },
-
-
-           
-          
-
-        }
-
-
-
-      export const loginController = async (
-        req: Request,
-        res: Response,
-      ) => {
-        const data = loginSchema.parse(req.body);
-
-        const result = await authService.login(data);
-
-      return success(
-        res,
-        result,
-        "Login successful",
-      );
-      };
-
+    return success(res, null, 'If an account exists, a verification email has been sent.');
+  },
+};
