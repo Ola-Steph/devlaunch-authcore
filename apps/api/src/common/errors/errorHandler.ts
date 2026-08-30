@@ -2,6 +2,8 @@ import type {
   ErrorRequestHandler,
 } from "express";
 
+import { ZodError } from "zod";
+
 import { logger } from "../logger/logger.js";
 import { ApiError } from "./ApiError.js";
 
@@ -12,6 +14,14 @@ export const errorHandler: ErrorRequestHandler = (
   _next,
 ) => {
   logger.error(err);
+
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: err.issues,
+    });
+  }
 
   if (err instanceof ApiError) {
     return res.status(err.statusCode).json({
